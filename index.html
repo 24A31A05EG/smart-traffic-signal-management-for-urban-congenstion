@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartFlow – Traffic Signal Management</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js for analytics graphs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- Google Fonts: Rajdhani (display) + JetBrains Mono (data) -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ====================================================
+     TOP NAV
+===================================================== -->
+<nav class="topnav">
+  <div class="nav-logo">
+    <span class="logo-icon">◈</span>
+    <span class="logo-text">SMART<b>FLOW</b></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#home" class="nav-link active">HOME</a></li>
+    <li><a href="#simulation" class="nav-link">SIMULATION</a></li>
+    <li><a href="#smart" class="nav-link">SMART SIGNALS</a></li>
+    <li><a href="#dashboard" class="nav-link">DASHBOARD</a></li>
+    <li><a href="#features" class="nav-link">FEATURES</a></li>
+  </ul>
+  <div class="nav-status">
+    <span class="status-dot" id="systemStatusDot"></span>
+    <span id="systemStatusLabel">SYSTEM IDLE</span>
+  </div>
+</nav>
+
+<!-- ====================================================
+     SECTION 1 · HOME / HERO
+===================================================== -->
+<section id="home" class="section hero-section">
+  <!-- Animated grid background -->
+  <div class="hero-grid"></div>
+  <div class="hero-scanline"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">⬡ URBAN MOBILITY PROJECT</div>
+    <h1 class="hero-title">
+      <span class="line1">SMART TRAFFIC</span>
+      <span class="line2">SIGNAL MANAGEMENT</span>
+      <span class="line3">FOR URBAN CONGESTION</span>
+    </h1>
+    <p class="hero-sub">
+      AI-driven adaptive signal control that reads real-time congestion,<br/>
+      dynamically allocates green-time, and prioritises emergency vehicles.
+    </p>
+
+    <div class="hero-stats">
+      <div class="stat-card"><span class="stat-val" data-target="38">0</span><span class="stat-unit">%</span><span class="stat-label">Less Wait Time</span></div>
+      <div class="stat-card"><span class="stat-val" data-target="24">0</span><span class="stat-unit">%</span><span class="stat-label">Fuel Saved</span></div>
+      <div class="stat-card"><span class="stat-val" data-target="4">0</span><span class="stat-unit">×</span><span class="stat-label">Intersection IQ</span></div>
+      <div class="stat-card"><span class="stat-val" data-target="99">0</span><span class="stat-unit">%</span><span class="stat-label">Uptime SLA</span></div>
+    </div>
+
+    <div class="hero-buttons">
+      <a href="#simulation" class="btn-primary">LAUNCH SIMULATION ▶</a>
+      <a href="#smart" class="btn-ghost">VIEW SIGNALS ◈</a>
+    </div>
+  </div>
+
+  <!-- Decorative mini-intersection in hero -->
+  <div class="hero-deco">
+    <div class="mini-junction">
+      <div class="mj-road mj-h"></div>
+      <div class="mj-road mj-v"></div>
+      <div class="mj-center"></div>
+      <div class="mj-car mj-car-n" id="mcN"></div>
+      <div class="mj-car mj-car-s" id="mcS"></div>
+      <div class="mj-car mj-car-e" id="mcE"></div>
+      <div class="mj-car mj-car-w" id="mcW"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================
+     SECTION 2 · TRAFFIC SIMULATION
+===================================================== -->
+<section id="simulation" class="section sim-section">
+  <div class="section-header">
+    <span class="sec-tag">02 · SIMULATION</span>
+    <h2 class="sec-title">4-Way Junction <span class="accent">Live</span></h2>
+    <p class="sec-desc">Drag sliders to adjust vehicle density in each direction. Watch signals adapt in real time.</p>
+  </div>
+
+  <div class="sim-layout">
+
+    <!-- DENSITY SLIDERS -->
+    <div class="slider-panel">
+      <h3 class="panel-title">TRAFFIC DENSITY</h3>
+      <div class="slider-group" id="sliderGroup">
+
+        <div class="slider-row" data-dir="N">
+          <div class="slider-label">
+            <span class="dir-badge dir-N">N</span>
+            <span>NORTH</span>
+            <span class="slider-val" id="valN">50</span>
+          </div>
+          <div class="slider-track">
+            <input type="range" min="0" max="100" value="50" class="density-slider" id="sliderN" data-dir="N" />
+            <div class="slider-fill" id="fillN"></div>
+          </div>
+          <div class="density-bar">
+            <div class="density-fill" id="dbN"></div>
+          </div>
+        </div>
+
+        <div class="slider-row" data-dir="S">
+          <div class="slider-label">
+            <span class="dir-badge dir-S">S</span>
+            <span>SOUTH</span>
+            <span class="slider-val" id="valS">30</span>
+          </div>
+          <div class="slider-track">
+            <input type="range" min="0" max="100" value="30" class="density-slider" id="sliderS" data-dir="S" />
+          </div>
+          <div class="density-bar"><div class="density-fill" id="dbS"></div></div>
+        </div>
+
+        <div class="slider-row" data-dir="E">
+          <div class="slider-label">
+            <span class="dir-badge dir-E">E</span>
+            <span>EAST</span>
+            <span class="slider-val" id="valE">70</span>
+          </div>
+          <div class="slider-track">
+            <input type="range" min="0" max="100" value="70" class="density-slider" id="sliderE" data-dir="E" />
+          </div>
+          <div class="density-bar"><div class="density-fill" id="dbE"></div></div>
+        </div>
+
+        <div class="slider-row" data-dir="W">
+          <div class="slider-label">
+            <span class="dir-badge dir-W">W</span>
+            <span>WEST</span>
+            <span class="slider-val" id="valW">20</span>
+          </div>
+          <div class="slider-track">
+            <input type="range" min="0" max="100" value="20" class="density-slider" id="sliderW" data-dir="W" />
+          </div>
+          <div class="density-bar"><div class="density-fill" id="dbW"></div></div>
+        </div>
+
+      </div>
+
+      <!-- Live congestion indicators -->
+      <div class="congestion-grid">
+        <div class="cong-item" id="congN"><span class="cong-dir">N</span><span class="cong-level">LOW</span></div>
+        <div class="cong-item" id="congS"><span class="cong-dir">S</span><span class="cong-level">LOW</span></div>
+        <div class="cong-item" id="congE"><span class="cong-dir">E</span><span class="cong-level">MED</span></div>
+        <div class="cong-item" id="congW"><span class="cong-dir">W</span><span class="cong-level">LOW</span></div>
+      </div>
+    </div>
+
+    <!-- MAIN JUNCTION CANVAS -->
+    <div class="junction-wrapper">
+      <!-- North label -->
+      <div class="road-label label-n">◆ NORTH</div>
+      <!-- South label -->
+      <div class="road-label label-s">SOUTH ◆</div>
+      <!-- East label -->
+      <div class="road-label label-e">EAST ◆</div>
+      <!-- West label -->
+      <div class="road-label label-w">◆ WEST</div>
+
+      <div class="junction" id="junction">
+        <!-- Roads -->
+        <div class="road road-v"></div>
+        <div class="road road-h"></div>
+
+        <!-- Road markings -->
+        <div class="marking mark-n"></div>
+        <div class="marking mark-s"></div>
+        <div class="marking mark-e"></div>
+        <div class="marking mark-w"></div>
+
+        <!-- Center box -->
+        <div class="center-box"></div>
+
+        <!-- Traffic lights (each direction) -->
+        <!-- NORTH light -->
+        <div class="tlight tl-n" id="tlN">
+          <div class="tl-pole"></div>
+          <div class="tl-box">
+            <div class="tl-bulb red" id="tlN-r"></div>
+            <div class="tl-bulb yellow" id="tlN-y"></div>
+            <div class="tl-bulb green" id="tlN-g"></div>
+          </div>
+          <div class="tl-timer" id="timerN">--</div>
+        </div>
+        <!-- SOUTH light -->
+        <div class="tlight tl-s" id="tlS">
+          <div class="tl-pole"></div>
+          <div class="tl-box">
+            <div class="tl-bulb red" id="tlS-r"></div>
+            <div class="tl-bulb yellow" id="tlS-y"></div>
+            <div class="tl-bulb green" id="tlS-g"></div>
+          </div>
+          <div class="tl-timer" id="timerS">--</div>
+        </div>
+        <!-- EAST light -->
+        <div class="tlight tl-e" id="tlE">
+          <div class="tl-pole"></div>
+          <div class="tl-box">
+            <div class="tl-bulb red" id="tlE-r"></div>
+            <div class="tl-bulb yellow" id="tlE-y"></div>
+            <div class="tl-bulb green" id="tlE-g"></div>
+          </div>
+          <div class="tl-timer" id="timerE">--</div>
+        </div>
+        <!-- WEST light -->
+        <div class="tlight tl-w" id="tlW">
+          <div class="tl-pole"></div>
+          <div class="tl-box">
+            <div class="tl-bulb red" id="tlW-r"></div>
+            <div class="tl-bulb yellow" id="tlW-y"></div>
+            <div class="tl-bulb green" id="tlW-g"></div>
+          </div>
+          <div class="tl-timer" id="timerW">--</div>
+        </div>
+
+        <!-- Cars container (JS populates) -->
+        <div class="cars-layer" id="carsLayer"></div>
+      </div>
+    </div>
+
+    <!-- SIGNAL LEGEND -->
+    <div class="legend-panel">
+      <h3 class="panel-title">SIGNAL STATUS</h3>
+      <div class="signal-status-list" id="signalStatusList">
+        <div class="ss-row" id="ss-N">
+          <span class="dir-badge dir-N">N</span>
+          <span class="ss-name">NORTH</span>
+          <span class="ss-state" id="ssN">RED</span>
+          <span class="ss-dot ss-dot-red" id="ssDotN"></span>
+        </div>
+        <div class="ss-row" id="ss-S">
+          <span class="dir-badge dir-S">S</span>
+          <span class="ss-name">SOUTH</span>
+          <span class="ss-state" id="ssS">RED</span>
+          <span class="ss-dot ss-dot-red" id="ssDotS"></span>
+        </div>
+        <div class="ss-row" id="ss-E">
+          <span class="dir-badge dir-E">E</span>
+          <span class="ss-name">EAST</span>
+          <span class="ss-state" id="ssE">RED</span>
+          <span class="ss-dot ss-dot-red" id="ssDotE"></span>
+        </div>
+        <div class="ss-row" id="ss-W">
+          <span class="dir-badge dir-W">W</span>
+          <span class="ss-name">WEST</span>
+          <span class="ss-state" id="ssW">RED</span>
+          <span class="ss-dot ss-dot-red" id="ssDotW"></span>
+        </div>
+      </div>
+
+      <div class="active-dir-display">
+        <span class="ad-label">ACTIVE LANE</span>
+        <span class="ad-value" id="activeDir">—</span>
+      </div>
+
+      <div class="cycle-info">
+        <div class="ci-row"><span>CYCLE #</span><span id="cycleCount">0</span></div>
+        <div class="ci-row"><span>PHASE</span><span id="cyclePhase">IDLE</span></div>
+        <div class="ci-row"><span>GREEN TIME</span><span id="greenTime">—</span></div>
+      </div>
+    </div>
+
+  </div><!-- /sim-layout -->
+</section>
+
+<!-- ====================================================
+     SECTION 3 · SMART SIGNAL SYSTEM
+===================================================== -->
+<section id="smart" class="section smart-section">
+  <div class="section-header">
+    <span class="sec-tag">03 · INTELLIGENCE</span>
+    <h2 class="sec-title">Smart Signal <span class="accent">Algorithm</span></h2>
+    <p class="sec-desc">Adaptive control loop: detects peak density, allocates green time proportionally.</p>
+  </div>
+
+  <div class="smart-layout">
+
+    <!-- CONTROL PANEL -->
+    <div class="control-card">
+      <div class="control-indicator" id="smartIndicator">
+        <div class="ci-ring"></div>
+        <div class="ci-ring ci-ring2"></div>
+        <span class="ci-icon">⬡</span>
+      </div>
+      <h3 class="control-title" id="smartTitle">SYSTEM READY</h3>
+      <p class="control-desc" id="smartDesc">Press START to activate AI-based adaptive signal control. The system will analyse lane densities and auto-optimise green times.</p>
+
+      <button class="btn-start" id="btnStart" onclick="startSmartSystem()">▶ START SMART SYSTEM</button>
+      <button class="btn-stop hidden" id="btnStop" onclick="stopSmartSystem()">■ STOP SYSTEM</button>
+
+      <!-- Manual override -->
+      <div class="manual-override" id="manualOverride">
+        <h4 class="mo-title">MANUAL OVERRIDE</h4>
+        <div class="mo-buttons">
+          <button class="mo-btn" onclick="manualGreen('N')">GREEN N</button>
+          <button class="mo-btn" onclick="manualGreen('S')">GREEN S</button>
+          <button class="mo-btn" onclick="manualGreen('E')">GREEN E</button>
+          <button class="mo-btn" onclick="manualGreen('W')">GREEN W</button>
+        </div>
+        <button class="mo-resume hidden" id="moResume" onclick="resumeAuto()">↺ RESUME AUTO</button>
+      </div>
+
+      <!-- Emergency vehicle -->
+      <div class="emergency-panel">
+        <h4 class="em-title">🚨 EMERGENCY VEHICLE</h4>
+        <div class="em-buttons">
+          <button class="em-btn" onclick="emergencyVehicle('N')">⬆ NORTH</button>
+          <button class="em-btn" onclick="emergencyVehicle('S')">⬇ SOUTH</button>
+          <button class="em-btn" onclick="emergencyVehicle('E')">➡ EAST</button>
+          <button class="em-btn" onclick="emergencyVehicle('W')">⬅ WEST</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALGORITHM VISUALIZATION -->
+    <div class="algo-card">
+      <h3 class="panel-title">ALGORITHM FLOW</h3>
+      <div class="algo-flow">
+        <div class="af-step" id="afs1">
+          <div class="af-icon">📡</div>
+          <div class="af-text"><b>1. SENSE</b><br/>Read lane density sensors</div>
+        </div>
+        <div class="af-arrow">↓</div>
+        <div class="af-step" id="afs2">
+          <div class="af-icon">🧠</div>
+          <div class="af-text"><b>2. ANALYSE</b><br/>Rank directions by congestion</div>
+        </div>
+        <div class="af-arrow">↓</div>
+        <div class="af-step" id="afs3">
+          <div class="af-icon">⏱</div>
+          <div class="af-text"><b>3. ALLOCATE</b><br/>Assign proportional green time</div>
+        </div>
+        <div class="af-arrow">↓</div>
+        <div class="af-step" id="afs4">
+          <div class="af-icon">🚦</div>
+          <div class="af-text"><b>4. EXECUTE</b><br/>Change signals & run countdown</div>
+        </div>
+        <div class="af-arrow">↓</div>
+        <div class="af-step" id="afs5">
+          <div class="af-icon">🔄</div>
+          <div class="af-text"><b>5. REPEAT</b><br/>Continuous adaptive loop</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CURRENT CYCLE INFO -->
+    <div class="cycle-card">
+      <h3 class="panel-title">CURRENT CYCLE</h3>
+      <div class="big-timer" id="bigTimer">00</div>
+      <div class="big-timer-label">SECONDS REMAINING</div>
+
+      <div class="rank-list" id="rankList">
+        <div class="rl-header">DENSITY RANK</div>
+        <div class="rl-row" id="rlN"><span class="rl-rank">—</span><span class="dir-badge dir-N">N</span><span class="rl-bar-wrap"><div class="rl-bar" id="rlBarN"></div></span><span class="rl-pct" id="rlPctN">0%</span></div>
+        <div class="rl-row" id="rlS"><span class="rl-rank">—</span><span class="dir-badge dir-S">S</span><span class="rl-bar-wrap"><div class="rl-bar" id="rlBarS"></div></span><span class="rl-pct" id="rlPctS">0%</span></div>
+        <div class="rl-row" id="rlE"><span class="rl-rank">—</span><span class="dir-badge dir-E">E</span><span class="rl-bar-wrap"><div class="rl-bar" id="rlBarE"></div></span><span class="rl-pct" id="rlPctE">0%</span></div>
+        <div class="rl-row" id="rlW"><span class="rl-rank">—</span><span class="dir-badge dir-W">W</span><span class="rl-bar-wrap"><div class="rl-bar" id="rlBarW"></div></span><span class="rl-pct" id="rlPctW">0%</span></div>
+      </div>
+
+      <div class="next-phase">
+        <span>NEXT GREEN →</span>
+        <span id="nextGreenDir" class="ng-val">—</span>
+      </div>
+    </div>
+
+  </div><!-- /smart-layout -->
+
+  <!-- Log output -->
+  <div class="event-log-wrap">
+    <h3 class="panel-title">EVENT LOG</h3>
+    <div class="event-log" id="eventLog">
+      <div class="el-row el-info">System initialised. Waiting for start command.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================
+     SECTION 4 · DASHBOARD / ANALYTICS
+===================================================== -->
+<section id="dashboard" class="section dash-section">
+  <div class="section-header">
+    <span class="sec-tag">04 · ANALYTICS</span>
+    <h2 class="sec-title">Traffic <span class="accent">Dashboard</span></h2>
+    <p class="sec-desc">Real-time density graphs and system KPIs.</p>
+  </div>
+
+  <div class="dash-grid">
+
+    <!-- Overall congestion card -->
+    <div class="kpi-card" id="kpiOverall">
+      <div class="kpi-label">OVERALL CONGESTION</div>
+      <div class="kpi-value" id="kpiOverallVal">LOW</div>
+      <div class="kpi-bar-wrap"><div class="kpi-bar" id="kpiOverallBar"></div></div>
+    </div>
+
+    <!-- Four direction KPI cards -->
+    <div class="kpi-card kpi-sm">
+      <div class="kpi-label">NORTH</div>
+      <div class="kpi-value kpi-med" id="kpiN">50%</div>
+      <div class="kpi-sub" id="kpiNLevel">MEDIUM</div>
+    </div>
+    <div class="kpi-card kpi-sm">
+      <div class="kpi-label">SOUTH</div>
+      <div class="kpi-value kpi-low" id="kpiS">30%</div>
+      <div class="kpi-sub" id="kpiSLevel">LOW</div>
+    </div>
+    <div class="kpi-card kpi-sm">
+      <div class="kpi-label">EAST</div>
+      <div class="kpi-value kpi-high" id="kpiE">70%</div>
+      <div class="kpi-sub" id="kpiELevel">HIGH</div>
+    </div>
+    <div class="kpi-card kpi-sm">
+      <div class="kpi-label">WEST</div>
+      <div class="kpi-value kpi-low" id="kpiW">20%</div>
+      <div class="kpi-sub" id="kpiWLevel">LOW</div>
+    </div>
+
+    <!-- Chart: Density over time -->
+    <div class="chart-card chart-wide">
+      <div class="chart-title">DENSITY OVER TIME (per direction)</div>
+      <canvas id="densityChart"></canvas>
+    </div>
+
+    <!-- Chart: Signal cycle distribution -->
+    <div class="chart-card">
+      <div class="chart-title">GREEN TIME ALLOCATION</div>
+      <canvas id="cycleChart"></canvas>
+    </div>
+
+    <!-- Emergency events log -->
+    <div class="chart-card">
+      <div class="chart-title">EMERGENCY EVENTS</div>
+      <div class="em-log" id="emLog"><div class="em-empty">No emergency events yet.</div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ====================================================
+     SECTION 5 · FEATURES
+===================================================== -->
+<section id="features" class="section feat-section">
+  <div class="section-header">
+    <span class="sec-tag">05 · CAPABILITIES</span>
+    <h2 class="sec-title">System <span class="accent">Features</span></h2>
+    <p class="sec-desc">A full suite of smart city traffic tools.</p>
+  </div>
+
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon">🧠</div>
+      <h3>AI Adaptive Control</h3>
+      <p>Real-time congestion analysis allocates green time proportionally to lane density.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🚨</div>
+      <h3>Emergency Priority</h3>
+      <p>One-click emergency override clears a path instantly, resuming auto control after 15s.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🕹</div>
+      <h3>Manual Override</h3>
+      <p>Operators can force-green any direction while the system pauses its cycle.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <h3>Live Analytics</h3>
+      <p>Real-time Chart.js graphs track density trends and green-time distribution.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">⏱</div>
+      <h3>Countdown Timers</h3>
+      <p>Each traffic light shows a live countdown so drivers can anticipate signal changes.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🚗</div>
+      <h3>Car Simulation</h3>
+      <p>Animated vehicles spawn and queue based on your density sliders, halting at red lights.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🌐</div>
+      <h3>Responsive Design</h3>
+      <p>Fully functional on desktop and tablet. Pure HTML/CSS/JS — no server required.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <h3>Zero Dependencies*</h3>
+      <p>Only Chart.js (CDN) is external. Works offline after first load.</p>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <span>SmartFlow – Smart Traffic Signal Management System</span>
+  </div>
+</section>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
